@@ -29,6 +29,17 @@ jobs:
       - name: dotnet publish
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
+      - name: Install dotnet-ef and add tools path
+        run: |
+          dotnet tool install --global dotnet-ef --version 8.* || dotnet tool update --global dotnet-ef --version 8.*
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Create EF Core migrations bundle
+        run: |
+          mkdir -p ${{env.DOTNET_ROOT}}/myapp
+          # Run from the project folder containing the .csproj if needed, e.g. --project ./src/YourProject.csproj
+          dotnet ef migrations bundle --output "${{env.DOTNET_ROOT}}/myapp/migrations-bundle" --configuration Release
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
